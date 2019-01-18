@@ -1,5 +1,5 @@
 name = "Singular"
-UUID = "189d1b22-1b5e-11e9-10b6-11bded4be2e0"
+uuid = "189d1b22-1b5e-11e9-10b6-11bded4be2e0"
 version = "0.1.0"
 
 [deps]
