@@ -40,6 +40,7 @@
 #include <Singular/tok.h>
 #include <Singular/links/silink.h>
 #include <Singular/fehelp.h>
+#include <Singular/maps_ip.h>
 
 namespace jlcxx {
     template<> struct IsBits<n_coeffType> : std::true_type {};

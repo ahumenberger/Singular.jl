@@ -1,6 +1,6 @@
 export spoly, PolyRing, coeff, coeffs_expos, degree, exponent!, isgen, content,
        exponent, lead_exponent, ngens, degree_bound, primpart, @PolynomialRing,
-       has_global_ordering, symbols
+       has_global_ordering, symbols, imap, fetch
 
 ###############################################################################
 #
@@ -663,4 +663,28 @@ function (R::AbstractAlgebra.Generic.MPolyRing{T})(p::Singular.spoly{Singular.n_
       new_p = new_p + libSingular.julia(coeff.ptr) * prod(gens.^exps)
    end
    return(new_p)
+end
+
+###############################################################################
+#
+#   Maps
+#
+###############################################################################
+
+function imap(p::spoly{T}, dst::PolyRing{T}) where T <: Nemo.RingElem
+   src = parent(p)
+   if src == dst
+       return p
+   end
+   ptr = libSingular.imap(src.ptr, dst.ptr, p.ptr)
+   return dst(ptr)
+end
+
+function fetch(p::spoly{T}, dst::PolyRing{T}) where T <: Nemo.RingElem
+   src = parent(p)
+   if src == dst
+       return p
+   end
+   ptr = libSingular.fetch(src.ptr, dst.ptr, p.ptr)
+   return dst(ptr)
 end
