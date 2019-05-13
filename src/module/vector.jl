@@ -1,4 +1,4 @@
-export FreeMod, svector, gens, rank, vector
+export FreeMod, svector, gens, rank, vector, jet
 
 ###############################################################################
 #
@@ -57,8 +57,6 @@ end
 
 function show(io::IO, a::svector)
    m = libSingular.p_String(a.ptr, base_ring(a).ptr)
-#   s = unsafe_string(m)
-#   libSingular.omFree(Ptr{Nothing}(m))
    print(io, m)
 end
 
@@ -73,7 +71,7 @@ function -(a::svector{T}) where T <: AbstractAlgebra.RingElem
    R = base_ring(a)
    a1 = libSingular.p_Copy(a.ptr, R.ptr)
    s = libSingular.p_Neg(a1, R.ptr)
-   return svector{T}(R, a.rank, s) 
+   return svector{T}(R, a.rank, s)
 end
 
 ###############################################################################
@@ -88,7 +86,7 @@ function +(a::svector{T}, b::svector{T}) where T <: AbstractAlgebra.RingElem
    a1 = libSingular.p_Copy(a.ptr, R.ptr)
    b1 = libSingular.p_Copy(b.ptr, R.ptr)
    s = libSingular.p_Add_q(a1, b1, R.ptr)
-   return svector{T}(R, a.rank, s) 
+   return svector{T}(R, a.rank, s)
 end
 
 function -(a::svector{T}, b::svector{T}) where T <: AbstractAlgebra.RingElem
@@ -97,7 +95,7 @@ function -(a::svector{T}, b::svector{T}) where T <: AbstractAlgebra.RingElem
    a1 = libSingular.p_Copy(a.ptr, R.ptr)
    b1 = libSingular.p_Copy(b.ptr, R.ptr)
    s = libSingular.p_Sub(a1, b1, R.ptr)
-   return svector{T}(R, a.rank, s) 
+   return svector{T}(R, a.rank, s)
 end
 
 ###############################################################################
@@ -109,18 +107,14 @@ end
 function *(a::svector{spoly{T}}, b::spoly{T}) where T <: AbstractAlgebra.RingElem
    base_ring(a) != parent(b) && error("Incompatible base rings")
    R = base_ring(a)
-   a1 = libSingular.p_Copy(a.ptr, R.ptr)
-   b1 = libSingular.p_Copy(b.ptr, R.ptr)
-   s = libSingular.p_Mult_q(a1, b1, R.ptr)
+   s = libSingular.pp_Mult_qq(a.ptr, b.ptr, R.ptr)
    return svector{spoly{T}}(R, a.rank, s)
 end
 
 function (a::spoly{T} * b::svector{spoly{T}}) where T <: Nemo.RingElem
    base_ring(b) != parent(a) && error("Incompatible base rings")
    R = base_ring(b)
-   a1 = libSingular.p_Copy(a.ptr, R.ptr)
-   b1 = libSingular.p_Copy(b.ptr, R.ptr)
-   s = libSingular.p_Mult_q(a1, b1, R.ptr)
+   s = libSingular.pp_Mult_qq(a.ptr, b.ptr, R.ptr)
    return svector{spoly{T}}(R, b.rank, s)
 end
 
@@ -182,7 +176,7 @@ function vector(R::PolyRing{T}, coords::spoly{T}...) where T <: AbstractAlgebra.
    n = length(coords)
    aa = [p.ptr.cpp_object for p in coords]
    v = libSingular.id_Array2Vector(reinterpret(Ptr{Nothing},pointer(aa)), n, R.ptr)
-   
+
    return svector{spoly{T}}(R, n, v)
 end
 
@@ -199,3 +193,19 @@ function FreeModule(R::PolyRing{T}, n::Int) where T <: Nemo.RingElem
    return FreeMod{S}(R, n)
 end
 
+###############################################################################
+#
+#   Differential functions
+#
+###############################################################################
+
+@doc Markdown.doc"""
+   jet(x::svector{spoly{T}}, n::Int)
+> Given a vector $x$ this function truncates each entry of $x$ up to degree $n$.
+"""
+function jet(x::svector{spoly{T}}, n::Int) where T <: AbstractAlgebra.RingElem
+   R = base_ring(x)
+   p = libSingular.p_Copy(x.ptr, R.ptr)
+   s = libSingular.p_Jet(p, Cint(n), R.ptr)
+   return svector{spoly{T}}(R, x.rank, s)
+end

@@ -9,6 +9,7 @@
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/const_array.hpp"
 #include "jlcxx/array.hpp"
+#include "jlcxx/tuple.hpp"
 
 #include <gmp.h>
 #include <omalloc/omalloc.h>
@@ -24,12 +25,13 @@
 #include <polys/monomials/ring.h>
 #include <polys/monomials/p_polys.h>
 #include <polys/simpleideals.h>
-#include <kernel/GBEngine/kstd1.h> 
+#include <kernel/GBEngine/kstd1.h>
 #include <kernel/GBEngine/syz.h>
 #include <kernel/GBEngine/tgb.h>
 #include <kernel/ideals.h>
 #include <kernel/polys.h>
-#include <Singular/grammar.h> 
+#include <kernel/combinatorics/stairc.h>
+#include <Singular/grammar.h>
 #include <Singular/libsingular.h>
 #include <Singular/fevoices.h>
 #include <Singular/ipshell.h>
@@ -43,8 +45,10 @@
 #include <Singular/maps_ip.h>
 
 namespace jlcxx {
-    template<> struct IsBits<n_coeffType> : std::true_type {};
-    template<> struct IsBits<rRingOrder_t> : std::true_type {};
-}
+template <> struct IsBits<n_coeffType> : std::true_type {
+};
+template <> struct IsBits<rRingOrder_t> : std::true_type {
+};
+}    // namespace jlcxx
 
 #endif

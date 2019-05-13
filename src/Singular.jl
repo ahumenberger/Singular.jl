@@ -15,12 +15,20 @@ import LinearAlgebra: normalize!, rank
 
 import Statistics: std
 
-import Nemo: add!, addeq!, base_ring, canonical_unit, check_parent, coeff,
-             contains, content, crt, divexact,
-             elem_type, gcdinv, gens, isnegative, isone,
-             isgen, iszero, isunit, lead, mul!, needs_parentheses, parent_type,
-             parent, primpart, promote_rule, reconstruct, show_minus_one, zero!,
-             ResidueRing, characteristic, degree, intersect, isconstant
+import Nemo: add!, addeq!, base_ring, canonical_unit,
+             change_base_ring, characteristic, check_parent, coeff,
+             coeffs, contains, content, crt,
+             deflate, deflation, degree, degrees, derivative, divexact, divides,
+             elem_type, evaluate, exponent_vectors, finish, gcdinv,
+             gen, gens, intersect, isconstant,
+             isgen, ismonomial, inflate, isnegative, isone,
+             isterm, isunit, iszero, lc, lt, lm, monomials,
+             MPolyBuildCtx, mul!, needs_parentheses,
+             nvars, ordering, parent_type,
+             parent, primpart, promote_rule, push_term!,
+             reconstruct, remove, show_minus_one, sort_terms!, symbols,
+             terms, total_degree, valuation, 
+             var_index, vars, zero!, ResidueRing
 
 export base_ring, elem_type, parent_type, parent
 
@@ -48,41 +56,40 @@ function __init__()
    libSingular.siInit(binSingular)
    # set up Singular parents (we cannot do this before Singular is initialised)
 
-   ZZ.ptr = get_n_Z()
-   ZZ.refcount = 1
-
-   QQ.ptr = get_n_Q()
-   QQ.refcount = 1
+   global ZZ = Integers()
+   global QQ = Rationals()
 
    # done in __init__ since headers must be included first
 
-  global n_Z_2_n_Q = libSingular.n_SetMap(ZZ.ptr, QQ.ptr)
-  global n_Q_2_n_Z = libSingular.n_SetMap(QQ.ptr, ZZ.ptr)
+   global n_Z_2_n_Q = libSingular.n_SetMap(ZZ.ptr, QQ.ptr)
+   global n_Q_2_n_Z = libSingular.n_SetMap(QQ.ptr, ZZ.ptr)
+   ZZ.refcount += 1
+   QQ.refcount += 1
 
-  global ringorder_no = libSingular.ringorder_no
-  global ringorder_lp = libSingular.ringorder_lp
-  global ringorder_rp = libSingular.ringorder_rp
-  global ringorder_dp = libSingular.ringorder_dp
-  global ringorder_Dp = libSingular.ringorder_Dp
-  global ringorder_ls = libSingular.ringorder_ls
-  global ringorder_rs = libSingular.ringorder_rs
-  global ringorder_ds = libSingular.ringorder_ds
-  global ringorder_Ds = libSingular.ringorder_Ds
-  global ringorder_c  = libSingular.ringorder_c
-  global ringorder_C  = libSingular.ringorder_C
+   global ringorder_no = libSingular.ringorder_no
+   global ringorder_lp = libSingular.ringorder_lp
+   global ringorder_rp = libSingular.ringorder_rp
+   global ringorder_dp = libSingular.ringorder_dp
+   global ringorder_Dp = libSingular.ringorder_Dp
+   global ringorder_ls = libSingular.ringorder_ls
+   global ringorder_rs = libSingular.ringorder_rs
+   global ringorder_ds = libSingular.ringorder_ds
+   global ringorder_Ds = libSingular.ringorder_Ds
+   global ringorder_c  = libSingular.ringorder_c
+   global ringorder_C  = libSingular.ringorder_C
 
- global sym2ringorder = Dict{Symbol, libSingular.rRingOrder_t}(
-  	  :lex => ringorder_lp,
+   global sym2ringorder = Dict{Symbol, libSingular.rRingOrder_t}(
+     :lex => ringorder_lp,
      :revlex => ringorder_rp,
-  	  :neglex => ringorder_ls,
+     :neglex => ringorder_ls,
      :negrevlex => ringorder_rs,
-	  :degrevlex => ringorder_dp,
+     :degrevlex => ringorder_dp,
      :deglex => ringorder_Dp,
-	  :negdegrevlex => ringorder_ds,
+     :negdegrevlex => ringorder_ds,
      :negdeglex => ringorder_Ds,
-	  :comp1max => ringorder_c,
+     :comp1max => ringorder_c,
      :comp1min => ringorder_C
-  )
+   )
 end
 
 ###############################################################################
@@ -108,15 +115,5 @@ include("Matrix.jl")
 include("Vector.jl")
 
 include("Resolution.jl")
-
-###############################################################################
-#
-#   Set Singlular ZZ and QQ
-#
-###############################################################################
-
-ZZ = Integers()
-
-QQ = Rationals()
 
 end # module
