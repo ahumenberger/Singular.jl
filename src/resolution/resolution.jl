@@ -1,4 +1,4 @@
-export ResolutionSet, sresolution, betti, minres
+export Resolution, ResolutionSet, sresolution, betti, minres
 
 ###############################################################################
 #
@@ -58,7 +58,8 @@ end
 @doc Markdown.doc"""
     betti(r::sresolution)
 > Return the Betti numbers, i.e. the ranks of the free modules in the given
-> free resolution. These are returned as a Julia array of `Int`s.
+> free resolution. These are returned as a Julia array of `Int`s. Note that the
+> output of this command is useful only in the graded case.
 """
 function betti(r::sresolution)
    array = libSingular.syBetti(r.ptr, Cint(r.len), r.base_ring.ptr)
@@ -73,7 +74,8 @@ end
 
 @doc Markdown.doc"""
     minres{T <: AbstractAlgebra.RingElem}(r::sresolution{T})
-> Return a minimal free resolution, given any free resolution. If the supplied
+> Return a minimal free resolution, given any free resolution. In the graded
+> case, there exists a uniquely determined minimal resolution. If the supplied
 > resolution is already minimal, it may be returned without making a copy.
 """
 function minres(r::sresolution{T}) where T <: AbstractAlgebra.RingElem
@@ -120,5 +122,28 @@ end
 function (S::ResolutionSet{T})(ptr::Ptr{Nothing}, len::Int) where T <: AbstractAlgebra.RingElem
    R = base_ring(S)
    return sresolution{T}(R, len, ptr)
+end
+
+###############################################################################
+#
+#   Resolution constructors
+#
+###############################################################################
+
+@doc Markdown.doc"""
+    Resolution(C::Array{smodule{T}, 1}) where T <: AbstractAlgebra.RingElem
+> Create a new resolution whose maps are given by the elements of an array C of
+> modules. Note that it is not checked that the maps are actually composable
+> and that their pairwise composition is the zero map, that is, that the
+> created resolution is a complex.
+"""
+function Resolution(C::Array{smodule{T}, 1}) where T <: AbstractAlgebra.RingElem
+    len = size(C, 1)+1
+    len > 1 || error("no module specified")
+    R = base_ring(C[1])
+    CC = (m -> m.ptr).(C)
+    C_ptr = reinterpret(Ptr{Nothing}, pointer(CC))
+    ptr = libSingular.res_Copy(C_ptr, Cint(len), R.ptr)
+    return sresolution{T}(R, len, ptr)
 end
 

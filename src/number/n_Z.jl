@@ -1,3 +1,4 @@
+import Base.convert
 export n_Z, Integers, crt
 
 ###############################################################################
@@ -374,5 +375,9 @@ function (R::Integers)(x::Nemo.fmpz)
    ccall((:flint_mpz_init_set_readonly, :libflint), Nothing,
          (Ptr{BigInt}, Ptr{fmpz}), Ref(a), Ref(x))
    return R(libSingular.n_InitMPZ(a, R.ptr))   
+end
+
+function convert(::Type{BigInt}, n::n_Z)
+  return libSingular.n_GetMPZ(n.ptr, parent(n).ptr)
 end
 

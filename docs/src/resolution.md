@@ -41,8 +41,27 @@ included in this list of basic operations.
 
 ### Constructors
 
-Resolutions can currently only be created by taking the free resolution of an ideal or
-module over a polynomial ring, as described in the relevant sections of the documentation.
+There are currently two ways to create resolutions in Singular.jl:
+They can either be created by taking the free resolution of an ideal or module
+over a polynomial ring, as described in the relevant sections of the
+documentation, or they can be created by the following constructor:
+
+```@docs
+Resolution(::Array{smodule{T}, 1}) where T <: AbstractAlgebra.RingElem
+```
+
+**Example**
+
+```julia
+R, (x, y) = PolynomialRing(QQ, ["x", "y"])
+
+M1 = Singular.Module(R, vector(R, x), vector(R, y))
+M2 = Singular.Module(R, vector(R, y, -x))
+
+F = Resolution([M1, M2])
+F[1]
+F[2]
+```
 
 Alternatively, resolutions can be refined to minimal resolutions, as described below.
 
@@ -64,10 +83,10 @@ F[n::Int]
 
 **Examples**
 
-```
-R, (x, y) = PolynomialRing(QQ, ["x", "y"])
+```julia
+R, (w, x, y, z) = PolynomialRing(QQ, ["w", "x", "y", "z"])
 
-I = Ideal(R, x*y + 1, x^2 + 1)
+I = Ideal(R, w^2 - x*z, w*x - y*z, x^2 - w*y, x*y - z^2, y^2 - w*z)
 F = fres(std(I), 0)
 
 n = length(F)
@@ -83,9 +102,9 @@ betti(::sresolution)
 **Examples**
 
 ```julia
-R, (x, y) = PolynomialRing(QQ, ["x", "y"])
+R, (w, x, y, z) = PolynomialRing(QQ, ["w", "x", "y", "z"])
 
-I = Ideal(R, x*y + 1, x^2 + 1)
+I = Ideal(R, w^2 - x*z, w*x - y*z, x^2 - w*y, x*y - z^2, y^2 - w*z)
 F = fres(std(I), 3)
 M = minres(F)
 
@@ -101,9 +120,9 @@ minres{T <: AbstractAlgebra.RingElem}(::sresolution{T})
 **Examples**
 
 ```julia
-R, (x, y) = PolynomialRing(QQ, ["x", "y"])
+R, (w, x, y, z) = PolynomialRing(QQ, ["w", "x", "y", "z"])
 
-I = Ideal(R, x*y + 1, x^2 + 1)
+I = Ideal(R, w^2 - x*z, w*x - y*z, x^2 - w*y, x*y - z^2, y^2 - w*z)
 F = fres(std(I), 3)
 M = minres(F)
 ```

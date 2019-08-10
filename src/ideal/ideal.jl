@@ -27,6 +27,14 @@ parent_type(::Type{sideal{spoly{T}}}) where T <: Nemo.RingElem = IdealSet{spoly{
 """
 ngens(I::sideal) = Int(libSingular.ngens(I.ptr))
 
+@doc Markdown.doc"""
+    gens(I::sideal)
+> Return the generators in the internal representation of the ideal $I$ as an array.
+"""
+function gens(I::sideal)
+   return [I[i] for i in 1:Singular.ngens(I)]
+end
+
 function checkbounds(I::sideal, i::Int)
    (i > ngens(I) || i < 1) && throw(BoundsError(I, i))
 end
@@ -451,17 +459,19 @@ end
 ###############################################################################
 
 @doc Markdown.doc"""
-     fres{T <: Nemo.RingElem}(id::sideal{T}, max_length::Int,
-      method::String="complete")
-> Compute a free resolution of the given ideal up to the maximum given length.
-> The ideal must be over a polynomial ring over a field, and a Groebner basis.
+     fres{T <: Nemo.RingElem}(id::Union{sideal{T}, smodule{T}},
+      max_length::Int, method::String="complete")
+> Compute a free resolution of the given ideal/module up to the maximum given
+> length. The ideal/module must be over a polynomial ring over a field, and
+> a Groebner basis.
 > The possible methods are "complete", "frame", "extended frame" and
 > "single module". The result is given as a resolution, whose i-th entry is
-> the syzygy module of the previous module, starting with the given ideal.
+> the syzygy module of the previous module, starting with the given
+> ideal/module.
 > The `max_length` can be set to $0$ if the full free resolution is required.
 """
-function fres(id::sideal{T}, max_length::Int, method::String = "complete") where T <: Nemo.RingElem
-   id.isGB == false && error("ideal is not a standard basis")
+function fres(id::Union{sideal{T}, smodule{T}}, max_length::Int, method::String = "complete") where T <: Nemo.RingElem
+   id.isGB == false && error("input is not a standard basis")
    max_length < 0 && error("length for fres must not be negative")
    R = base_ring(id)
    if max_length == 0
